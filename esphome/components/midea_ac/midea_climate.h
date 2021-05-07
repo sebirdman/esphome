@@ -2,12 +2,26 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
+#include "esphome/components/switch/switch.h"
 #include "esphome/components/midea_dongle/midea_dongle.h"
 #include "esphome/components/climate/climate.h"
 #include "midea_frame.h"
 
 namespace esphome {
 namespace midea_ac {
+
+class MideaSwitch : public switch_::Switch, public Component{
+ public:
+  void dump_config() override;
+  void set_midea_dongle_parent(midea_dongle::MideaDongle *parent) { this->parent_ = parent; }
+
+ protected:
+  midea_dongle::MideaDongle *parent_{nullptr};
+
+  void write_state(bool state) override;
+  const LightToggleFrame toggle_frame_;
+
+};
 
 class MideaAC : public midea_dongle::MideaAppliance, public climate::Climate, public Component {
  public:
@@ -19,6 +33,10 @@ class MideaAC : public midea_dongle::MideaAppliance, public climate::Climate, pu
   void set_outdoor_temperature_sensor(sensor::Sensor *sensor) { this->outdoor_sensor_ = sensor; }
   void set_humidity_setpoint_sensor(sensor::Sensor *sensor) { this->humidity_sensor_ = sensor; }
   void set_power_sensor(sensor::Sensor *sensor) { this->power_sensor_ = sensor; }
+  void set_light_switch(midea_ac::MideaSwitch *myswitch) {
+    this->light_switch_ = myswitch;
+    this->light_switch_->set_midea_dongle_parent(this->parent_);
+  }
   void set_beeper_feedback(bool state) { this->beeper_feedback_ = state; }
   void set_swing_horizontal(bool state) { this->traits_swing_horizontal_ = state; }
   void set_swing_both(bool state) { this->traits_swing_both_ = state; }
@@ -36,6 +54,7 @@ class MideaAC : public midea_dongle::MideaAppliance, public climate::Climate, pu
   sensor::Sensor *outdoor_sensor_{nullptr};
   sensor::Sensor *humidity_sensor_{nullptr};
   sensor::Sensor *power_sensor_{nullptr};
+  MideaSwitch *light_switch_{nullptr};
   uint8_t request_num_{0};
   bool ctrl_request_{false};
   bool beeper_feedback_{false};

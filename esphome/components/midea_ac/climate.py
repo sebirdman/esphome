@@ -1,4 +1,4 @@
-from esphome.components import climate, sensor
+from esphome.components import climate, sensor, switch
 import esphome.config_validation as cv
 import esphome.codegen as cg
 from esphome.const import (
@@ -12,7 +12,13 @@ from esphome.const import (
     DEVICE_CLASS_TEMPERATURE,
     ICON_WATER_PERCENT,
     DEVICE_CLASS_HUMIDITY,
+    CONF_INVERTED,
+    CONF_ICON,
+    ICON_LIGHTBULB,
+    CONF_NAME,
 )
+from esphome.core import coroutine
+
 from esphome.components.midea_dongle import CONF_MIDEA_DONGLE_ID, MideaDongle
 
 AUTO_LOAD = ["climate", "sensor", "midea_dongle"]
@@ -24,8 +30,11 @@ CONF_SWING_BOTH = "swing_both"
 CONF_OUTDOOR_TEMPERATURE = "outdoor_temperature"
 CONF_POWER_USAGE = "power_usage"
 CONF_HUMIDITY_SETPOINT = "humidity_setpoint"
+CONF_LIGHT_SWITCH = "light_switch"
+
 midea_ac_ns = cg.esphome_ns.namespace("midea_ac")
 MideaAC = midea_ac_ns.class_("MideaAC", climate.Climate, cg.Component)
+MideaSwitch = midea_ac_ns.class_("MideaSwitch", switch.Switch, cg.Component)
 
 CONFIG_SCHEMA = cv.All(
     climate.CLIMATE_SCHEMA.extend(
@@ -44,9 +53,27 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_HUMIDITY_SETPOINT): sensor.sensor_schema(
                 UNIT_PERCENT, ICON_WATER_PERCENT, 0, DEVICE_CLASS_HUMIDITY
             ),
+            cv.Optional(CONF_LIGHT_SWITCH): switch.SWITCH_SCHEMA.extend(
+                {
+                    cv.GenerateID(): cv.declare_id(MideaSwitch),
+                    cv.Required(CONF_NAME): cv.string,
+                    cv.Optional(CONF_INVERTED): cv.invalid(
+                        "Midea switches do not support inverted mode!"
+                    ),
+                    cv.Optional(CONF_ICON, default=ICON_LIGHTBULB): switch.icon,
+                }
+            ).extend(cv.COMPONENT_SCHEMA),
         }
     ).extend(cv.COMPONENT_SCHEMA)
 )
+
+
+@coroutine
+def new_switch(config):
+    var = cg.new_Pvariable(config[CONF_ID])
+    yield cg.register_component(var, config)
+    yield switch.register_switch(var, config)
+    yield var
 
 
 def to_code(config):
@@ -67,3 +94,6 @@ def to_code(config):
     if CONF_HUMIDITY_SETPOINT in config:
         sens = yield sensor.new_sensor(config[CONF_HUMIDITY_SETPOINT])
         cg.add(var.set_humidity_setpoint_sensor(sens))
+    if CONF_LIGHT_SWITCH in config:
+        sens = yield new_switch(config[CONF_LIGHT_SWITCH])
+        cg.add(var.set_light_switch(sens))

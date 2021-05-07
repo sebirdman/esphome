@@ -96,6 +96,9 @@ class PropertiesFrame : public midea_dongle::BaseFrame {
   /* POWER USAGE */
   float get_power_usage() const;
 
+  /* Get Lights Enabled */
+  bool get_lights_enabled() const;
+
   /// Set properties from another frame
   void set_properties(const PropertiesFrame &p) { memcpy(this->pbuf_ + 11, p.data() + 11, 10); }
 
@@ -132,6 +135,16 @@ class CommandFrame : public midea_dongle::StaticFrame<PropertiesFrame> {
  private:
   static const uint8_t PROGMEM INIT[];
 };
+
+// Command frame
+class LightToggleFrame : public midea_dongle::StaticFrame<PropertiesFrame> {
+ public:
+  LightToggleFrame() : StaticFrame(FPSTR(this->INIT)) {}
+
+ private:
+  static const uint8_t PROGMEM INIT[];
+};
+
 
 }  // namespace midea_ac
 }  // namespace esphome

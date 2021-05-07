@@ -11,6 +11,22 @@ static void set_sensor(sensor::Sensor *sensor, float value) {
     sensor->publish_state(value);
 }
 
+static void set_switch(midea_ac::MideaSwitch *myswitch, bool value) {
+  if (myswitch != nullptr && (myswitch->state != value)) {
+    myswitch->publish_state(value);
+  }
+}
+
+void MideaSwitch::write_state(bool state) {
+    if (this->state == state) {
+      return;
+    }
+
+    this->parent_->write_frame(this->toggle_frame_);
+}
+
+void MideaSwitch::dump_config() { LOG_SWITCH("", "Light Switch", this); }
+
 template<typename T> void set_property(T &property, T value, bool &flag) {
   if (property != value) {
     property = value;
@@ -46,6 +62,7 @@ void MideaAC::on_frame(const midea_dongle::Frame &frame) {
     this->publish_state();
   set_sensor(this->outdoor_sensor_, p.get_outdoor_temp());
   set_sensor(this->humidity_sensor_, p.get_humidity_setpoint());
+  set_switch(this->light_switch_, p.get_lights_enabled());
 }
 
 void MideaAC::on_update() {
