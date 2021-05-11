@@ -108,8 +108,8 @@ climate::ClimateTraits MideaAC::traits() {
   traits.set_visual_temperature_step(0.5);
   traits.set_supports_auto_mode(true);
   traits.set_supports_cool_mode(true);
-  traits.set_supports_dry_mode(true);
-  traits.set_supports_heat_mode(true);
+  traits.set_supports_dry_mode(this->traits_supports_dry_mode_);
+  traits.set_supports_heat_mode(this->traits_supports_heat_mode_);
   traits.set_supports_fan_only_mode(true);
   traits.set_supports_fan_mode_auto(true);
   traits.set_supports_fan_mode_low(true);

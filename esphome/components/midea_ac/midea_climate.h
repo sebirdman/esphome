@@ -39,7 +39,9 @@ class MideaAC : public midea_dongle::MideaAppliance, public climate::Climate, pu
   }
   void set_beeper_feedback(bool state) { this->beeper_feedback_ = state; }
   void set_swing_horizontal(bool state) { this->traits_swing_horizontal_ = state; }
+  void set_dry_mode_supported(bool state) { this->traits_supports_dry_mode_ = state; }
   void set_swing_both(bool state) { this->traits_swing_both_ = state; }
+  void set_heat_supported(bool state) { this->traits_supports_heat_mode_ = state; }
 
  protected:
   /// Override control to change settings of the climate device.
@@ -59,7 +61,9 @@ class MideaAC : public midea_dongle::MideaAppliance, public climate::Climate, pu
   bool ctrl_request_{false};
   bool beeper_feedback_{false};
   bool traits_swing_horizontal_{false};
+  bool traits_supports_dry_mode_{false};
   bool traits_swing_both_{false};
+  bool traits_supports_heat_mode_{true};
 };
 
 }  // namespace midea_ac
