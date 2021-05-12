@@ -32,6 +32,7 @@ CONF_POWER_USAGE = "power_usage"
 CONF_HUMIDITY_SETPOINT = "humidity_setpoint"
 CONF_LIGHT_SWITCH = "light_switch"
 CONF_HEAT = "heat"
+CONF_DRY = "dry"
 
 midea_ac_ns = cg.esphome_ns.namespace("midea_ac")
 MideaAC = midea_ac_ns.class_("MideaAC", climate.Climate, cg.Component)
@@ -46,6 +47,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_SWING_HORIZONTAL, default=False): cv.boolean,
             cv.Optional(CONF_SWING_BOTH, default=False): cv.boolean,
             cv.Optional(CONF_HEAT, default=True): cv.boolean,
+            cv.Optional(CONF_DRY, default=True): cv.boolean,
             cv.Optional(CONF_OUTDOOR_TEMPERATURE): sensor.sensor_schema(
                 UNIT_CELSIUS, ICON_THERMOMETER, 0, DEVICE_CLASS_TEMPERATURE
             ),
@@ -88,6 +90,7 @@ def to_code(config):
     cg.add(var.set_swing_horizontal(config[CONF_SWING_HORIZONTAL]))
     cg.add(var.set_swing_both(config[CONF_SWING_BOTH]))
     cg.add(var.set_heat_supported(config[CONF_HEAT]))
+    cg.add(var.set_dry_mode_supported(config[CONF_DRY]))
     if CONF_OUTDOOR_TEMPERATURE in config:
         sens = yield sensor.new_sensor(config[CONF_OUTDOOR_TEMPERATURE])
         cg.add(var.set_outdoor_temperature_sensor(sens))
@@ -97,7 +100,6 @@ def to_code(config):
     if CONF_HUMIDITY_SETPOINT in config:
         sens = yield sensor.new_sensor(config[CONF_HUMIDITY_SETPOINT])
         cg.add(var.set_humidity_setpoint_sensor(sens))
-        cg.add(var.set_dry_mode_supported(True))
     if CONF_LIGHT_SWITCH in config:
         sens = yield new_switch(config[CONF_LIGHT_SWITCH])
         cg.add(var.set_light_switch(sens))
