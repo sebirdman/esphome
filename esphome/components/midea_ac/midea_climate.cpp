@@ -22,7 +22,7 @@ void MideaSwitch::write_state(bool state) {
       return;
     }
 
-    this->parent_->write_frame(this->toggle_frame_);
+    *this->needs_toggle = true;
 }
 
 void MideaSwitch::dump_config() { LOG_SWITCH("", "Light Switch", this); }
@@ -62,11 +62,18 @@ void MideaAC::on_frame(const midea_dongle::Frame &frame) {
     this->publish_state();
   set_sensor(this->outdoor_sensor_, p.get_outdoor_temp());
   set_sensor(this->humidity_sensor_, p.get_humidity_setpoint());
+
+  if (this->light_switch_->state != p.get_lights_enabled()) {
+    this->needs_light_toggle = false;
+  }
+
   set_switch(this->light_switch_, p.get_lights_enabled());
 }
 
 void MideaAC::on_update() {
-  if (this->ctrl_request_) {
+  if (this->needs_light_toggle) {
+    this->parent_->write_frame(this->toggle_frame_);
+  } else if (this->ctrl_request_) {
     ESP_LOGD(TAG, "TX: control");
     this->parent_->write_frame(this->cmd_frame_);
   } else {

@@ -13,13 +13,12 @@ namespace midea_ac {
 class MideaSwitch : public switch_::Switch, public Component{
  public:
   void dump_config() override;
-  void set_midea_dongle_parent(midea_dongle::MideaDongle *parent) { this->parent_ = parent; }
+  void set_needs_toggle(bool *needs_toggle) { this->needs_toggle = needs_toggle; }
 
  protected:
-  midea_dongle::MideaDongle *parent_{nullptr};
+  bool *needs_toggle;
 
   void write_state(bool state) override;
-  const LightToggleFrame toggle_frame_;
 
 };
 
@@ -35,7 +34,7 @@ class MideaAC : public midea_dongle::MideaAppliance, public climate::Climate, pu
   void set_power_sensor(sensor::Sensor *sensor) { this->power_sensor_ = sensor; }
   void set_light_switch(midea_ac::MideaSwitch *myswitch) {
     this->light_switch_ = myswitch;
-    this->light_switch_->set_midea_dongle_parent(this->parent_);
+    this->light_switch_->set_needs_toggle(&this->needs_light_toggle);
   }
   void set_beeper_feedback(bool state) { this->beeper_feedback_ = state; }
   void set_swing_horizontal(bool state) { this->traits_swing_horizontal_ = state; }
@@ -52,6 +51,7 @@ class MideaAC : public midea_dongle::MideaAppliance, public climate::Climate, pu
   const QueryFrame query_frame_;
   const PowerQueryFrame power_frame_;
   CommandFrame cmd_frame_;
+  const LightToggleFrame toggle_frame_;
   midea_dongle::MideaDongle *parent_{nullptr};
   sensor::Sensor *outdoor_sensor_{nullptr};
   sensor::Sensor *humidity_sensor_{nullptr};
@@ -60,6 +60,7 @@ class MideaAC : public midea_dongle::MideaAppliance, public climate::Climate, pu
   uint8_t request_num_{0};
   bool ctrl_request_{false};
   bool beeper_feedback_{false};
+  bool needs_light_toggle{false};
   bool traits_swing_horizontal_{false};
   bool traits_supports_dry_mode_{false};
   bool traits_swing_both_{false};
